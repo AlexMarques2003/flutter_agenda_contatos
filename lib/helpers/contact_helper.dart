@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -8,7 +10,7 @@ final String emailColumn = "emailColumn";
 final String phoneColumn = "phoneColumn";
 final String imgColumn = "imgColumn";
 
-class ContactHelper{
+class ContactHelper {
 
   static final ContactHelper _instance = ContactHelper.internal();
 
@@ -26,13 +28,15 @@ class ContactHelper{
       return _db;
     }
   }
+
   Future<Database> initDb() async {
     final databasesPath = await getDatabasesPath();
     final path = join(databasesPath, "contactsnew.db");
 
-    return await openDatabase(path, version:1, onCreate: (Database db, int newerVersion) async {
+    return await openDatabase(path, version: 1, onCreate: (Database db, int newerVersion) async {
       await db.execute(
-          "CREATE TABLE $contactTable($idColumn INTEGER PRIMARY KEY, $nameColumn TEXT, $emailColumn TEXT,  $phoneColumn TEXT, $imgColumn TEXT)"
+        "CREATE TABLE $contactTable($idColumn INTEGER PRIMARY KEY, $nameColumn TEXT, $emailColumn TEXT,"
+            "$phoneColumn TEXT, $imgColumn TEXT)"
       );
     });
   }
@@ -49,7 +53,6 @@ class ContactHelper{
       columns: [idColumn, nameColumn, emailColumn, phoneColumn, imgColumn],
       where: "$idColumn = ?",
       whereArgs: [id]);
-
     if(maps.length > 0){
       return Contact.fromMap(maps.first);
     } else {
@@ -59,23 +62,21 @@ class ContactHelper{
 
   Future<int> deleteContact(int id) async {
     Database dbContact = await db;
-    return await dbContact.delete(contactTable, where: "$idColumn", whereArgs: [id]);
+    return await dbContact.delete(contactTable, where: "$idColumn = ?", whereArgs: [id]);
   }
 
   Future<int> updateContact(Contact contact) async {
     Database dbContact = await db;
     return await dbContact.update(contactTable,
-      contact.toMap(),
-      where: "$idColumn = ?",
-      whereArgs: [contact.id]);
+        contact.toMap(),
+        where: "$idColumn = ?",
+        whereArgs: [contact.id]);
   }
 
   Future<List> getAllContacts() async {
     Database dbContact = await db;
     List listMap = await dbContact.rawQuery("SELECT * FROM $contactTable");
-
     List<Contact> listContact = List();
-
     for(Map m in listMap){
       listContact.add(Contact.fromMap(m));
     }
@@ -84,7 +85,7 @@ class ContactHelper{
 
   Future<int> getNumber() async {
     Database dbContact = await db;
-    return Sqflite.firstIntValue(await dbContact.rawQuery("SELECT COUNT(*) $contactTable"));
+    return Sqflite.firstIntValue(await dbContact.rawQuery("SELECT COUNT(*) FROM $contactTable"));
   }
 
   Future close() async {
@@ -112,14 +113,13 @@ class Contact {
     img = map[imgColumn];
   }
 
-  Map toMap(){
+  Map toMap() {
     Map<String, dynamic> map = {
       nameColumn: name,
       emailColumn: email,
       phoneColumn: phone,
       imgColumn: img
     };
-
     if(id != null){
       map[idColumn] = id;
     }
@@ -128,8 +128,7 @@ class Contact {
 
   @override
   String toString() {
-    return "Contact(id: $id, name: $name,email: $email, phone: $phone, img: $img)";
-
+    return "Contact(id: $id, name: $name, email: $email, phone: $phone, img: $img)";
   }
 
 }
