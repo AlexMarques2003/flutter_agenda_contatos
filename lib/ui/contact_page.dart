@@ -143,7 +143,6 @@ class _ContactPageState extends State<ContactPage> {
                 child: Text("Sim"),
                 onPressed: (){
                   Navigator.pop(context);
-                  Navigator.pop(context);
                 },
               ),
             ],
